@@ -1,0 +1,39 @@
+# .gitignore for Stock Price Prediction Project
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Data files
+data/financial_news.csv
+data/macro_indicators.csv
+
+# Database files
+*.db
+
+# IDE files
+.vscode/
+*.code-workspace
+
+# Logs and results
+logs/
+results/
+
+# Environment variables
+.env
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
