@@ -20,7 +20,7 @@ class StockDataCollector:
         self.connection = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='hmrl1',  # PUT YOUR MYSQL PASSWORD HERE
+            password='hmrl1', 
             database='stock_prediction'
         )
     
@@ -44,9 +44,9 @@ class StockDataCollector:
                     print(f"❌ No data found for {ticker}")
                     continue
                 
-                # Prepare data for database
+                
                 hist.reset_index(inplace=True)
-                hist['ticker'] = ticker.replace('.NS', '')  # Remove .NS for storage
+                hist['ticker'] = ticker.replace('.NS', '')
                 
                 # Clean column names
                 hist.columns = ['date', 'open_price', 'high_price', 'low_price', 
@@ -56,11 +56,11 @@ class StockDataCollector:
                 hist = hist[['ticker', 'date', 'open_price', 'high_price', 
                            'low_price', 'close_price', 'volume']]
                 
-                # Insert into database
+                
                 self.insert_stock_data(hist)
                 
                 print(f"✅ {name}: {len(hist)} records inserted")
-                time.sleep(1)  # Be nice to Yahoo Finance
+                time.sleep(1)  
                 
             except Exception as e:
                 print(f"❌ Error downloading {ticker}: {e}")

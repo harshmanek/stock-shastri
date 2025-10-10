@@ -8,7 +8,7 @@ class DatabaseManager:
         # Database connection details
         self.host = 'localhost'
         self.user = 'root'
-        self.password = 'hmrl1'  # PUT YOUR ACTUAL MYSQL PASSWORD HERE
+        self.password = 'hmrl1'
         
     def create_database(self):
         """Create the database first"""
@@ -46,7 +46,7 @@ class DatabaseManager:
                 host=self.host,
                 user=self.user,
                 password=self.password,
-                database='stock_prediction'  # Now we can specify the database
+                database='stock_prediction' 
             )
             
             if self.connection.is_connected():
