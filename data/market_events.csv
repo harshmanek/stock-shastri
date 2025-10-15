@@ -1,0 +1,39 @@
+date,event_name,event_type,impact_level
+2019-02-01,Union Budget 2019,budget,high
+2019-02-07,RBI MPC Meeting,monetary_policy,medium
+2019-03-20,Lok Sabha Election Results,election,high
+2019-04-04,RBI MPC Meeting,monetary_policy,medium
+2019-05-31,Q4 FY19 GDP Release,economic_data,medium
+2019-06-06,RBI MPC Meeting,monetary_policy,medium
+2019-08-07,RBI MPC Meeting,monetary_policy,medium
+2019-08-30,Q1 FY20 GDP Release,economic_data,medium
+2019-10-04,RBI MPC Meeting,monetary_policy,medium
+2019-11-29,Q2 FY20 GDP Release,economic_data,medium
+2019-12-05,RBI MPC Meeting,monetary_policy,medium
+2020-02-01,Union Budget 2020,budget,high
+2020-02-06,RBI MPC Meeting,monetary_policy,medium
+2020-02-28,Q3 FY20 GDP Release,economic_data,medium
+2020-03-24,COVID Lockdown Announcement,policy,high
+2020-03-27,RBI Emergency Cut,monetary_policy,high
+2020-04-17,RBI MPC Meeting,monetary_policy,medium
+2020-05-22,RBI MPC Meeting,monetary_policy,medium
+2020-08-06,RBI MPC Meeting,monetary_policy,medium
+2020-10-09,RBI MPC Meeting,monetary_policy,medium
+2020-12-04,RBI MPC Meeting,monetary_policy,medium
+2021-02-01,Union Budget 2021,budget,high
+2021-02-05,RBI MPC Meeting,monetary_policy,medium
+2021-04-07,RBI MPC Meeting,monetary_policy,medium
+2021-04-14,COVID Second Wave Peak,health,medium
+2021-06-04,RBI MPC Meeting,monetary_policy,medium
+2021-08-06,RBI MPC Meeting,monetary_policy,medium
+2021-10-08,RBI MPC Meeting,monetary_policy,medium
+2021-12-08,RBI MPC Meeting,monetary_policy,medium
+2022-02-01,Union Budget 2022,budget,high
+2022-02-10,RBI MPC Meeting,monetary_policy,medium
+2022-02-24,Russia-Ukraine War Impact,geopolitical,medium
+2022-04-08,RBI MPC Meeting,monetary_policy,medium
+2022-06-08,RBI MPC Meeting,monetary_policy,medium
+2022-08-05,RBI MPC Meeting,monetary_policy,medium
+2022-09-30,RBI MPC Meeting,monetary_policy,medium
+2022-12-07,RBI MPC Meeting,monetary_policy,medium
+2023-02-01,Union Budget 2023,budget,high
