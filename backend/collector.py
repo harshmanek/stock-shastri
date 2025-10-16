@@ -1,7 +1,15 @@
 import pandas as pd
 from pandas_datareader import wb
-from backend.config import DATA_DIR
 import os
+import sys
+
+# Add project root to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from config import DATA_DIR
 
 def fetch_unemployment():
     df = wb.download(indicator='SL.UEM.TOTL.ZS', country='IN', start=2010, end=2023)

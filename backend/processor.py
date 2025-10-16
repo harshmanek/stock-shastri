@@ -1,7 +1,15 @@
 import pandas as pd
-from backend.collector import load_raw_macro
-from backend.config import DATA_DIR
 import os
+import sys
+
+# Add project root to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from collector import load_raw_macro
+from config import DATA_DIR
 
 def merge_macro_and_events(events_df):
     fx, repo, unemp = load_raw_macro()
