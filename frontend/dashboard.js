@@ -106,27 +106,36 @@
         return;
       }
 
-      const direction = data.prediction == 1 ? "⬆️ UP" : "⬇️ DOWN";
-      const color = data.prediction == 1 ? "success" : "danger";
+      const isUp = data.prediction == 1;
+      const color = isUp ? "success" : "danger";
+      const directionSymbol = isUp ? "△" : "▽";
+      const directionText = isUp ? "UP" : "DOWN";
 
       document.getElementById("result").innerHTML = `
                 <div class="alert alert-${color} prediction-card">
-                    <h4>${ticker}: ${direction}</h4>
-                    <div class="progress mt-2">
-                        <div class="progress-bar bg-${color}" role="progressbar" 
-                             style="width: ${(data.confidence * 100).toFixed(
-                               1
-                             )}%" 
-                             aria-valuenow="${(data.confidence * 100).toFixed(
-                               1
-                             )}" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">${ticker}</h3>
+                        <div class="prediction-badge badge bg-${color} p-2">
+                            <span class="direction-symbol" style="font-size: 1.2em;">${directionSymbol}</span>
+                            <span class="ms-1">${directionText}</span>
                         </div>
                     </div>
-                    <p class="mt-2 mb-0">Confidence: ${(
-                      data.confidence * 100
-                    ).toFixed(1)}%</p>
+                    <div class="mt-3">
+                        <label class="form-label">Confidence Level</label>
+                        <div class="progress" style="height: 1.5rem;">
+                            <div class="progress-bar bg-${color}" role="progressbar" 
+                                 style="width: ${(
+                                   data.confidence * 100
+                                 ).toFixed(1)}%" 
+                                 aria-valuenow="${(
+                                   data.confidence * 100
+                                 ).toFixed(1)}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                 ${(data.confidence * 100).toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
                 </div>`;
 
       await loadFeatureImportances(ticker);
