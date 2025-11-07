@@ -1,5 +1,55 @@
 // Wrap everything in an IIFE to avoid global namespace pollution
 (function () {
+  // Setup navigation when DOM is loaded
+  // Global state to track current view
+  let currentView = "main"; // Can be 'main' or 'about'
+
+  // Function to stop ongoing data fetching
+  function stopDataFetching() {
+    // Clear any existing intervals
+    if (window.dataFetchingInterval) {
+      clearInterval(window.dataFetchingInterval);
+    }
+  }
+
+  // Function to show main view
+  function showMainView() {
+    currentView = "main";
+    document.querySelector(".search-container").style.display = "block";
+    document.querySelector("#recent").style.display = "block";
+    document.querySelector("#about").style.display = "none";
+
+    // Resume any data fetching if needed
+    loadWatchlist(); // Only load if we're in main view
+  }
+
+  // Function to show about view
+  function showAboutView() {
+    currentView = "about";
+    document.querySelector(".search-container").style.display = "none";
+    document.querySelector("#recent").style.display = "none";
+    document.querySelector("#about").style.display = "block";
+
+    // Stop any ongoing data fetching
+    stopDataFetching();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle navigation
+    document.querySelectorAll(".nav-link").forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const href = this.getAttribute("href");
+
+        if (href === "#about") {
+          showAboutView();
+        } else if (href === "#recent" || href === "#") {
+          showMainView();
+        }
+      });
+    });
+  });
+
   // API base URL - point to Flask backend
   const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -7,6 +57,7 @@
   const chartConfigs = {
     importanceChart: null,
     priceHistoryChart: null,
+    technicalChart: null,
   };
 
   // UI helpers
@@ -250,6 +301,46 @@
     });
   }
 
+  // Function to update timeframe predictions display
+  function updateTimeframePredictions(predictions, accuracy) {
+    const container = document.getElementById("timeframePredictions");
+    if (!container) return;
+
+    container.style.display = "block";
+
+    Object.entries(predictions).forEach(([timeframe, data]) => {
+      const el = container.querySelector(`[data-timeframe="${timeframe}"]`);
+      if (!el) return;
+
+      const isUp = data.prediction === 1;
+      const directionText = isUp ? "UP" : "DOWN";
+      const confidence = (data.confidence * 100).toFixed(1);
+
+      // Update prediction
+      el.querySelector(".h3").innerHTML = `
+        <span class="text-${isUp ? "success" : "danger"}">
+          ${directionText}
+          <i class="bi bi-arrow-${isUp ? "up" : "down"}-circle-fill ms-2"></i>
+        </span>
+      `;
+
+      // Update confidence bar
+      const progressBar = el.querySelector(".progress-bar");
+      progressBar.style.width = `${confidence}%`;
+      progressBar.className = `progress-bar bg-${isUp ? "success" : "danger"}`;
+
+      // Update accuracy stats if available
+      const accuracyStats = accuracy[timeframe];
+      if (accuracyStats) {
+        const statsText = `
+          ${accuracyStats.accuracy}% accuracy
+          (${accuracyStats.verified_predictions}/${accuracyStats.total_predictions} verified)
+        `;
+        el.querySelector(".accuracy-stats").textContent = statsText;
+      }
+    });
+  }
+
   // Function to get prediction
   async function getPrediction() {
     let ticker = document.getElementById("ticker").value;
@@ -262,6 +353,22 @@
     showLoading();
 
     try {
+      // Get predictions for all timeframes
+      const timeframesRes = await fetch(
+        `${API_BASE_URL}/predict/timeframes/${ticker}`
+      );
+      if (!timeframesRes.ok) {
+        throw new Error(
+          `Failed to get timeframe predictions: ${timeframesRes.status}`
+        );
+      }
+      const timeframeData = await timeframesRes.json();
+      updateTimeframePredictions(
+        timeframeData.predictions,
+        timeframeData.accuracy
+      );
+
+      // Get main prediction
       const res = await fetch(`${API_BASE_URL}/predict/${ticker}`);
       if (!res.ok) {
         const text = await res.text();
@@ -337,6 +444,170 @@
     }
   }
 
+  // Technical indicators functions
+  async function loadTechnicalIndicators(ticker) {
+    // Don't load technical indicators if we're in about view
+    if (currentView === "about") return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/technical/${ticker}`);
+      if (!res.ok) {
+        console.warn("Technical indicators not available:", res.status);
+        return;
+      }
+      const data = await res.json();
+
+      // Update RSI
+      document.getElementById("rsiValue").textContent = data.rsi;
+      document.getElementById("rsiInterpretation").textContent =
+        data.rsi_interpretation;
+      document.getElementById("rsiTrend").innerHTML =
+        data.rsi > 50
+          ? '<i class="bi bi-arrow-up-circle-fill text-success"></i>'
+          : '<i class="bi bi-arrow-down-circle-fill text-danger"></i>';
+
+      // Update MACD
+      document.getElementById("macdValue").textContent = data.macd;
+      document.getElementById("macdInterpretation").textContent =
+        data.macd_interpretation;
+      document.getElementById("macdTrend").innerHTML =
+        data.macd_interpretation === "Bullish"
+          ? '<i class="bi bi-arrow-up-circle-fill text-success"></i>'
+          : '<i class="bi bi-arrow-down-circle-fill text-danger"></i>';
+    } catch (error) {
+      console.error("Failed to load technical indicators:", error);
+    }
+  }
+
+  // Price statistics functions
+  async function loadPriceStatistics(ticker) {
+    // Don't load price statistics if we're in about view
+    if (currentView === "about") return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/statistics/${ticker}`);
+      if (!res.ok) {
+        console.warn("Price statistics not available:", res.status);
+        return;
+      }
+      const data = await res.json();
+
+      // Update price statistics
+      document.getElementById(
+        "week52High"
+      ).textContent = `₹${data.week_52_high.toLocaleString()}`;
+      document.getElementById(
+        "week52Low"
+      ).textContent = `₹${data.week_52_low.toLocaleString()}`;
+      document.getElementById("avgVolume").textContent =
+        data.avg_volume.toLocaleString();
+
+      const changeEl = document.getElementById("dailyChange");
+      const changeValue = data.daily_change_percent;
+      changeEl.textContent = `${changeValue > 0 ? "+" : ""}${changeValue}%`;
+      changeEl.className = `h5 mb-0 ${
+        changeValue > 0 ? "text-success" : "text-danger"
+      }`;
+    } catch (error) {
+      console.error("Failed to load price statistics:", error);
+    }
+  }
+
+  // Watchlist functions
+  async function loadWatchlist() {
+    // Don't load watchlist if we're in about view
+    if (currentView === "about") return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/watchlist`);
+      if (!res.ok) return;
+      const watchlist = await res.json();
+
+      const container = document.getElementById("watchlistContainer");
+      // Check if container exists before trying to modify it
+      if (!container) return;
+
+      container.innerHTML = watchlist.length
+        ? ""
+        : '<div class="col-12">No stocks in watchlist</div>';
+
+      watchlist.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "col-md-4 mb-3";
+        card.innerHTML = `
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">${item.ticker}</h5>
+                <button class="btn btn-sm btn-outline-danger remove-watchlist" data-ticker="${
+                  item.ticker
+                }">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              <div class="text-muted small">Added ${new Date(
+                item.added_at
+              ).toLocaleDateString()}</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Add click handlers for remove buttons
+      document.querySelectorAll(".remove-watchlist").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const ticker = e.currentTarget.dataset.ticker;
+          await removeFromWatchlist(ticker);
+        });
+      });
+    } catch (error) {
+      console.error("Failed to load watchlist:", error);
+    }
+  }
+
+  async function addToWatchlist(ticker) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/watchlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticker }),
+      });
+      if (!res.ok) throw new Error("Failed to add to watchlist");
+      await loadWatchlist();
+    } catch (error) {
+      console.error("Failed to add to watchlist:", error);
+    }
+  }
+
+  async function removeFromWatchlist(ticker) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/watchlist`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticker }),
+      });
+      if (!res.ok) throw new Error("Failed to remove from watchlist");
+      await loadWatchlist();
+    } catch (error) {
+      console.error("Failed to remove from watchlist:", error);
+    }
+  }
+
+  // Enhance the getPrediction function
+  const originalGetPrediction = getPrediction;
+  getPrediction = async function () {
+    await originalGetPrediction();
+    const ticker = document.getElementById("ticker").value;
+    if (!ticker) return;
+
+    // Load additional data
+    await Promise.all([
+      loadTechnicalIndicators(ticker),
+      loadPriceStatistics(ticker),
+    ]);
+  };
+
   // Initialize everything when the page loads
   document.addEventListener("DOMContentLoaded", () => {
     createImportanceChart();
@@ -354,6 +625,18 @@
         getPrediction();
       });
     });
+
+    // Add watchlist button handler
+    const addWatchlistBtn = document.getElementById("addToWatchlist");
+    if (addWatchlistBtn) {
+      addWatchlistBtn.addEventListener("click", () => {
+        const ticker = document.getElementById("ticker").value;
+        if (ticker) addToWatchlist(ticker);
+      });
+    }
+
+    // Load initial watchlist
+    loadWatchlist();
   });
 
   // Make getPrediction available globally for inline button clicks

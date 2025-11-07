@@ -14,9 +14,16 @@ from trainer import train_model
 from processor import merge_macro_and_events
 from predictor import StockPredictor
 from config import DATA_DIR, MODEL_PATH
+from technical_analysis import get_technical_indicators, get_price_statistics
+from timeframe_prediction import TimeframePredictor
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# Initialize predictors and watchlist
+base_predictor = StockPredictor()
+timeframe_predictor = TimeframePredictor(base_predictor)
+watchlist = {}
 
 predictor = StockPredictor()
 
@@ -44,6 +51,65 @@ def update_macro():
     events = pd.read_csv(os.path.join(DATA_DIR, 'event_features.csv'), parse_dates=['date'])
     merge_macro_and_events(events)
     return jsonify({'status': 'macro updated'}), 200
+
+@app.route('/technical/<ticker>', methods=['GET'])
+def get_technical(ticker):
+    """Get technical indicators for a stock"""
+    indicators = get_technical_indicators(ticker)
+    if indicators is None:
+        return jsonify({'error': f'Could not calculate indicators for {ticker}'}), 404
+    return jsonify(indicators)
+
+@app.route('/statistics/<ticker>', methods=['GET'])
+def get_statistics(ticker):
+    """Get enhanced price statistics for a stock"""
+    stats = get_price_statistics(ticker)
+    if stats is None:
+        return jsonify({'error': f'Could not calculate statistics for {ticker}'}), 404
+    return jsonify(stats)
+
+@app.route('/watchlist', methods=['GET', 'POST', 'DELETE'])
+def manage_watchlist():
+    """Manage user watchlist"""
+    if request.method == 'GET':
+        return jsonify(list(watchlist.values()))
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        ticker = data.get('ticker')
+        if not ticker:
+            return jsonify({'error': 'Ticker is required'}), 400
+        
+        # Add to watchlist with timestamp
+        watchlist[ticker] = {
+            'ticker': ticker,
+            'added_at': pd.Timestamp.now().isoformat()
+        }
+        return jsonify({'message': f'Added {ticker} to watchlist'})
+    
+    elif request.method == 'DELETE':
+        data = request.get_json()
+        ticker = data.get('ticker')
+        if not ticker:
+            return jsonify({'error': 'Ticker is required'}), 400
+        
+        if ticker in watchlist:
+            del watchlist[ticker]
+            return jsonify({'message': f'Removed {ticker} from watchlist'})
+        return jsonify({'error': 'Ticker not found in watchlist'}), 404
+
+@app.route('/predict/timeframes/<ticker>', methods=['GET'])
+def predict_timeframes(ticker):
+    """Get predictions for multiple timeframes"""
+    try:
+        results = timeframe_predictor.predict_multiple_timeframes(ticker)
+        accuracy = timeframe_predictor.get_historical_accuracy(ticker)
+        return jsonify({
+            'predictions': results,
+            'accuracy': accuracy
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/predict/<ticker>', methods=['GET'])
 def predict(ticker):
