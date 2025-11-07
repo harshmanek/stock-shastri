@@ -87,16 +87,28 @@ def get_feature_importances(ticker=None):
 @app.route('/price_history/<ticker>', methods=['GET'])
 def get_price_history(ticker):
     try:
-        # Get last 30 days of price data
-        df = predictor.data[predictor.data['ticker'] == ticker].sort_values('date')
-        df = df.tail(30)
+        # Remove .NS suffix if present
+        clean_ticker = ticker.replace('.NS', '')
+        
+        # Get price history from predictor's data
+        df = predictor.data[predictor.data['ticker'] == clean_ticker].sort_values('date')
+        
+        if len(df) == 0:
+            return jsonify({'error': f'Ticker {ticker} not found'}), 404
+            
+        # Get last 90 days of data for better visualization
+        df = df.tail(90)
+        
+        # Extract dates and prices, convert dates to ISO format
+        dates = df['date'].dt.strftime('%Y-%m-%d').tolist()
+        prices = df['close_price'].tolist()
         
         return jsonify({
-            'dates': df['date'].dt.strftime('%Y-%m-%d').tolist(),
-            'prices': df['close_price'].tolist()
+            'dates': dates,
+            'prices': prices
         }), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=8000)
