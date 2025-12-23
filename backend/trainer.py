@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
 import joblib
 import os
 import sys
@@ -39,6 +40,19 @@ def train_model():
     rf = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42)
     print("Training model...")
     rf.fit(X[:split], y[:split])
+    
+    # Evaluate the model on the testing data
+    y_test = y[split:]
+    X_test = X[split:]
+    y_pred = rf.predict(X_test)
+
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Model Accuracy: {accuracy * 100:.2f}%")
+
+    # Detailed classification report
+    print("Classification Report:")
+    print(classification_report(y_test, y_pred))
     
     # Create models directory if it doesn't exist
     model_dir = os.path.dirname(MODEL_PATH)

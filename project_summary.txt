@@ -1,0 +1,90 @@
+# Stock Shastri Project Summary
+
+## Project Overview
+- **Project Name**: Stock Shastri
+- **Purpose**: A comprehensive stock prediction system that integrates financial data, sentiment analysis, and technical indicators to provide insights and predictions for selected stocks.
+
+## Key Components
+1. **Frontend**:
+   - **Files**: `dashboard.js`, `dashboard_new.js`, `index.html`
+   - **Purpose**: Provides a user interface for visualizing stock data, technical indicators, and predictions.
+   - **Features**:
+     - Displays technical indicators like RSI and MACD.
+     - Shows price statistics and trends.
+     - Navigation between views (e.g., main dashboard and about page).
+
+2. **Backend**:
+   - **Files**: `app.py`, `predictor.py`, `processor.py`, `collector.py`
+   - **Purpose**: Handles data processing, predictions, and API endpoints.
+   - **Features**:
+     - REST API for stock predictions (`/predict/<ticker>`).
+     - Model retraining endpoint (`/train`).
+     - Macro data update functionality (`/update_macro`).
+
+3. **Data**:
+   - **Files**: Multiple CSV files in the `data` folder.
+   - **Purpose**: Stores financial data, sentiment scores, and macroeconomic indicators.
+   - **Key Files**:
+     - `financial_news.csv`: Contains financial news headlines.
+     - `features_with_events.csv`: Features used for predictions.
+
+4. **Scripts**:
+   - **Files**: Various Python scripts in the `scripts` folder.
+   - **Purpose**: Data cleaning, feature preparation, and sentiment analysis.
+
+5. **Models**:
+   - **Path**: `models/rf_model.pkl`
+   - **Purpose**: Machine learning model for stock predictions.
+
+6. **Notebooks**:
+   - **Files**: Jupyter notebooks for data exploration and visualization.
+   - **Purpose**: Used for prototyping and analysis.
+
+## Technical Details
+- **Frontend**:
+  - Built with JavaScript and HTML.
+  - Uses `fetch` API to interact with the backend.
+
+- **Backend**:
+  - Built with Flask.
+  - Integrates machine learning models using `joblib`.
+  - Processes macroeconomic and event data for predictions.
+
+- **Database**:
+  - MySQL database for storing stock and sentiment data.
+  - Tables include `stocks`, `sentiment_data`, and `macro_indicators`.
+
+- **Machine Learning**:
+  - Random Forest model for stock predictions.
+  - Features include sentiment scores, macroeconomic indicators, and event impact scores.
+
+## How It Works
+1. **Data Collection**:
+   - Historical stock data and financial news are collected and stored in the database.
+
+2. **Data Processing**:
+   - Macro and event data are merged to create a complete dataset.
+   - Missing values are handled using forward and backward filling.
+
+3. **Model Training**:
+   - The Random Forest model is trained on the processed dataset.
+
+4. **Prediction**:
+   - The backend API provides predictions for selected stocks.
+   - Predictions include confidence scores.
+
+5. **Visualization**:
+   - The frontend displays predictions, technical indicators, and price statistics.
+
+## Important Endpoints
+- `/`: Home endpoint providing API details.
+- `/predict/<ticker>`: Predicts stock movement for a given ticker.
+- `/train`: Retrains the model with updated data.
+- `/update_macro`: Updates macroeconomic data.
+
+## Technologies Used
+- **Frontend**: JavaScript, HTML, CSS
+- **Backend**: Python, Flask
+- **Database**: MySQL
+- **Machine Learning**: Scikit-learn
+- **Libraries**: Pandas, Joblib, Flask-CORS
